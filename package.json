@@ -1,0 +1,70 @@
+{
+  "name": "@everscribe/sdk",
+  "version": "0.0.0",
+  "description": "Node/TypeScript SDK for the Everscribe audit-log API",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./event": {
+      "types": "./dist/event/index.d.ts",
+      "import": "./dist/event/index.js",
+      "require": "./dist/event/index.cjs"
+    },
+    "./recorder": {
+      "types": "./dist/recorder/index.d.ts",
+      "import": "./dist/recorder/index.js",
+      "require": "./dist/recorder/index.cjs"
+    },
+    "./minter": {
+      "types": "./dist/minter/index.d.ts",
+      "import": "./dist/minter/index.js",
+      "require": "./dist/minter/index.cjs"
+    },
+    "./express": {
+      "types": "./dist/express.d.ts",
+      "import": "./dist/express.js",
+      "require": "./dist/express.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.0",
+    "express": "^5.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.8"
+  },
+  "peerDependencies": {
+    "express": ">=4 <6"
+  },
+  "peerDependenciesMeta": {
+    "express": {
+      "optional": true
+    }
+  }
+}
