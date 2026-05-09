@@ -1,3 +1,2 @@
-// Top-level entry point for @everscribe/sdk.
-// Phase 5 will populate this with `create`, `createFromEnv`, and the Client class.
-export {};
+export { Client, create, createFromEnv } from "./client.js";
+export { Event } from "./event/event.js";
