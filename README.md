@@ -1,4 +1,4 @@
-# @everscribe/sdk
+# @everscribe/sdk-node
 
 Node/TypeScript SDK for the Everscribe audit-log API. Two coordinated surfaces:
 
@@ -29,15 +29,15 @@ with TypeScript declarations.
 ## Install
 
 ```sh
-pnpm add @everscribe/sdk        # or: npm install / yarn add
+pnpm add @everscribe/sdk-node        # or: npm install / yarn add
 ```
 
 ```ts
-import { create, createFromEnv, Event } from "@everscribe/sdk";
-import * as event from "@everscribe/sdk/event";        // Event, fromContext, withRedactedFields, ...
-import * as recorder from "@everscribe/sdk/recorder";  // BufferedRecorder, HttpRecorder, options
-import * as minter from "@everscribe/sdk/minter";      // Client, TokenOptions
-import { expressMiddleware } from "@everscribe/sdk/express";  // Express adapter
+import { create, createFromEnv, Event } from "@everscribe/sdk-node";
+import * as event from "@everscribe/sdk-node/event";        // Event, fromContext, withRedactedFields, ...
+import * as recorder from "@everscribe/sdk-node/recorder";  // BufferedRecorder, HttpRecorder, options
+import * as minter from "@everscribe/sdk-node/minter";      // Client, TokenOptions
+import { expressMiddleware } from "@everscribe/sdk-node/express";  // Express adapter
 ```
 
 The root export is the entry point — bind credentials once and hand out
@@ -55,7 +55,7 @@ The root export binds the project ID and API key once and lets you build
 per-surface clients without re-passing them:
 
 ```ts
-import { create } from "@everscribe/sdk";
+import { create } from "@everscribe/sdk-node";
 
 const es = create(projectId, apiKey);  // throws if either is empty/whitespace
 const rec = es.newRecorder();
@@ -68,7 +68,7 @@ environment instead — `createFromEnv` reads `EVERSCRIBE_PROJECT_ID` and
 unset or empty:
 
 ```ts
-import { createFromEnv } from "@everscribe/sdk";
+import { createFromEnv } from "@everscribe/sdk-node";
 
 const es = createFromEnv();
 ```
@@ -86,7 +86,7 @@ const rec = es.newRecorder({
 Customers who only need the recorder can skip the root client:
 
 ```ts
-import * as recorder from "@everscribe/sdk/recorder";
+import * as recorder from "@everscribe/sdk-node/recorder";
 
 const rec = recorder.create(projectId, apiKey, { bufferSize: 2000 });
 ```
@@ -112,7 +112,7 @@ factory is a one-line shortcut for ingest-only setups.
 ### 2. Define your ActorResolver
 
 ```ts
-import type { ActorResolver } from "@everscribe/sdk/express";
+import type { ActorResolver } from "@everscribe/sdk-node/express";
 ```
 
 The resolver bridges session-provisioned request state to an `Actor`. In
@@ -174,7 +174,7 @@ which calls your `resolveActor`):
 
 ```ts
 import express from "express";
-import { expressMiddleware } from "@everscribe/sdk/express";
+import { expressMiddleware } from "@everscribe/sdk-node/express";
 
 const app = express();
 
@@ -223,7 +223,7 @@ For mutation events, attach the before/after state with `diff()`. The
 audit-log API computes the JSON Patch on ingest.
 
 ```ts
-import { withRedactedFields } from "@everscribe/sdk/event";
+import { withRedactedFields } from "@everscribe/sdk-node/event";
 
 app.patch("/users/:id", async (req, res) => {
   const e = req.event!;
@@ -259,7 +259,7 @@ extra event so each gets a fresh clone of the per-request template
 (Actor, Origin) without sharing or mutating metadata:
 
 ```ts
-import { fromContext } from "@everscribe/sdk/event";
+import { fromContext } from "@everscribe/sdk-node/event";
 
 app.post("/users/:id/sessions/revoke-all", async (req, res) => {
   const sessions = await listActiveSessions(req.params.id);
@@ -430,7 +430,7 @@ e.withFields("reason", "spam", "severity", "high", "count", 3);
 For non-HTTP callers, build events directly:
 
 ```ts
-import { Event } from "@everscribe/sdk";
+import { Event } from "@everscribe/sdk-node";
 
 const e = new Event("subscription.trial_expired");
 e.actor = { type: "system", id: "trial_expirer" };
@@ -518,7 +518,7 @@ fills empty keys.
 
 ## Embedded views
 
-The `@everscribe/sdk/minter` subpath mints short-lived JWT tokens that
+The `@everscribe/sdk-node/minter` subpath mints short-lived JWT tokens that
 let a customer's frontend mount the Everscribe embeddable component
 (e.g. `<EverscribeEvents />`) without exposing the project API key to
 the browser.
@@ -539,7 +539,7 @@ The cleanest path is via the root client, which already holds the
 credentials:
 
 ```ts
-import { create } from "@everscribe/sdk";
+import { create } from "@everscribe/sdk-node";
 
 const es = create(projectId, apiKey);
 const rec = es.newRecorder();
@@ -558,7 +558,7 @@ const token = await m.mintToken({
 Customers who only need the minter surface can construct it directly:
 
 ```ts
-import * as minter from "@everscribe/sdk/minter";
+import * as minter from "@everscribe/sdk-node/minter";
 
 const m = new minter.Client(projectId, apiKey);
 const token = await m.mintToken({ /* ... */ });
