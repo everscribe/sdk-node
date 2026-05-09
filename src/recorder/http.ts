@@ -1,5 +1,6 @@
 import { Event, prepareEvent } from "../event/event.js";
 import { eventToWire } from "../event/wire.js";
+import { combineSignals } from "../internal/abort.js";
 
 import {
   HttpError,
@@ -69,7 +70,7 @@ export class HttpRecorder implements Recorder, BatchRecorder {
   }
 
   private async post(path: string, body: string, callerSignal?: AbortSignal): Promise<void> {
-    const signal = combineSignals(callerSignal, this.requestTimeout);
+    const signal = combineSignals(callerSignal, this.requestTimeout, new Error("recorder: request timeout"));
     const resp = await this.fetchImpl(this.baseUrl + path, {
       method: "POST",
       headers: {
@@ -101,23 +102,3 @@ export class HttpRecorder implements Recorder, BatchRecorder {
   }
 }
 
-/** Combines an optional caller-supplied AbortSignal with a per-request
- *  timeout. When either fires, the returned signal aborts. Avoids the
- *  Node-20.3-only `AbortSignal.any` for compatibility with Node 20.0–20.2. */
-function combineSignals(caller: AbortSignal | undefined, timeoutMs: number): AbortSignal {
-  const ctrl = new AbortController();
-  const timeoutId = setTimeout(() => ctrl.abort(new Error("request timeout")), timeoutMs);
-  // Keep the timer from holding the event loop open in long-lived processes.
-  if (typeof timeoutId.unref === "function") timeoutId.unref();
-
-  ctrl.signal.addEventListener("abort", () => clearTimeout(timeoutId), { once: true });
-
-  if (caller) {
-    if (caller.aborted) {
-      ctrl.abort(caller.reason);
-    } else {
-      caller.addEventListener("abort", () => ctrl.abort(caller.reason), { once: true });
-    }
-  }
-  return ctrl.signal;
-}
