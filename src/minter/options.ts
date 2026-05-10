@@ -40,8 +40,6 @@ export interface TokenOptions {
   allowDSLInput?: boolean;
   /** Unlocks the AI ("Ask in plain English") tab in the embed
    *  components and POST /v1/embed/events/nlp. Default false.
-   *  When true, every NLP call counts against the issuing
-   *  partner's Anthropic budget. */
   allowNLP?: boolean;
 }
 
