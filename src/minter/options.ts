@@ -39,7 +39,7 @@ export interface TokenOptions {
    *  and accepts `?q=` on the read API. Default false. */
   allowDSLInput?: boolean;
   /** Unlocks the AI ("Ask in plain English") tab in the embed
-   *  components and POST /v1/embed/events/nlp. Default false.
+   *  components and POST /v1/embed/events/nlp. Default false. */
   allowNLP?: boolean;
 }
 
