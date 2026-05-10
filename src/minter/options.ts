@@ -30,6 +30,19 @@ export interface TokenOptions {
    *  mid-string wildcards (`user.*.create`), and wildcards without a
    *  preceding dot (`user*`) are rejected. */
   allowedActions?: string[];
+  /** Restricts which catalog fields the token's DSL queries (and
+   *  NLP-generated DSL) can reference. Same nil / non-nil-empty
+   *  semantics as allowedColumns / allowedActions — undefined for
+   *  no restriction, empty array is rejected. */
+  allowedFields?: string[];
+  /** Unlocks the Query (advanced DSL) tab in the embed components
+   *  and accepts `?q=` on the read API. Default false. */
+  allowDSLInput?: boolean;
+  /** Unlocks the AI ("Ask in plain English") tab in the embed
+   *  components and POST /v1/embed/events/nlp. Default false.
+   *  When true, every NLP call counts against the issuing
+   *  partner's Anthropic budget. */
+  allowNLP?: boolean;
 }
 
 /** Validates `opts` and returns the wire-shape body. Throws a plain Error
@@ -84,6 +97,18 @@ export function tokenOptionsToWire(opts: TokenOptions): Record<string, unknown> 
     }
     wire.actions = [...opts.allowedActions];
   }
+
+  if (opts.allowedFields !== undefined) {
+    if (opts.allowedFields.length === 0) {
+      throw new Error("minter: allowedFields is empty; omit the field for no restriction");
+    }
+    // Field validation lives on the server (the catalog is canonical
+    // there); the SDK ships entries through verbatim.
+    wire.allowed_fields = [...opts.allowedFields];
+  }
+
+  if (opts.allowDSLInput) wire.allow_dsl_input = true;
+  if (opts.allowNLP) wire.allow_nlp = true;
 
   return wire;
 }
