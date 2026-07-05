@@ -32,7 +32,7 @@ export interface TokenOptions {
   allowedActions?: string[];
   /** Restricts which catalog fields the token's DSL queries (and
    *  NLP-generated DSL) can reference. Same nil / non-nil-empty
-   *  semantics as allowedColumns / allowedActions — undefined for
+   *  semantics as allowedColumns / allowedActions - undefined for
    *  no restriction, empty array is rejected. */
   allowedFields?: string[];
   /** Unlocks the Query (advanced DSL) tab in the embed components
@@ -44,7 +44,7 @@ export interface TokenOptions {
 }
 
 /** Validates `opts` and returns the wire-shape body. Throws a plain Error
- *  on validation failure — the throw short-circuits the round-trip so no
+ *  on validation failure - the throw short-circuits the round-trip so no
  *  HTTP call is made. */
 export function tokenOptionsToWire(opts: TokenOptions): Record<string, unknown> {
   const wire: Record<string, unknown> = {};

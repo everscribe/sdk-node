@@ -1,6 +1,6 @@
 /** Combines an optional caller-supplied AbortSignal with a per-request
  *  timeout. The returned signal aborts when either fires. Avoids the
- *  Node-20.3-only `AbortSignal.any` for compatibility with Node 20.0–20.2. */
+ *  Node-20.3-only `AbortSignal.any` for compatibility with Node 20.0-20.2. */
 export function combineSignals(
   caller: AbortSignal | undefined,
   timeoutMs: number,

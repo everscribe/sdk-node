@@ -1,10 +1,16 @@
+<p align="center">
+  <img src="assets/everscribe.svg" alt="Everscribe" height="64" align="middle">
+  &nbsp;&nbsp;<b>+</b>&nbsp;&nbsp;
+  <img src="assets/nodejs.svg" alt="Node.js" height="56" align="middle">
+</p>
+
 # @everscribe/sdk-node
 
-Node/TypeScript SDK for the Everscribe audit-log API. Two coordinated surfaces:
+Node/TypeScript SDK for the [Everscribe](https://everscribe.io)  audit-log API. Two coordinated surfaces:
 
-- **Recorder** — append-only event ingest. Records who did what, when, on
-  what resource, and — for mutation events — how the resource changed.
-- **Minter** — mints short-lived embed tokens that let a customer's
+- **Recorder** - append-only event ingest. Records who did what, when, on
+  what resource, and - for mutation events - how the resource changed.
+- **Minter** - mints short-lived embed tokens that let a customer's
   frontend mount the Everscribe embeddable component (e.g.
   `<EverscribeEvents />`) to display events without exposing the project
   API key to the browser.
@@ -40,7 +46,7 @@ import * as minter from "@everscribe/sdk-node/minter";      // Client, TokenOpti
 import { expressMiddleware } from "@everscribe/sdk-node/express";  // Express adapter
 ```
 
-The root export is the entry point — bind credentials once and hand out
+The root export is the entry point - bind credentials once and hand out
 per-surface clients. Customers who only need one surface can call
 `recorder.create` or `new minter.Client` directly to skip the SDK-client
 step.
@@ -63,7 +69,7 @@ const rec = es.newRecorder();
 ```
 
 For 12-factor / containerized deployments, read credentials from the
-environment instead — `createFromEnv` reads `EVERSCRIBE_PROJECT_ID` and
+environment instead - `createFromEnv` reads `EVERSCRIBE_PROJECT_ID` and
 `EVERSCRIBE_API_KEY` and throws naming the missing variable if either is
 unset or empty:
 
@@ -168,7 +174,7 @@ const resolveActor: ActorResolver = (req) => {
 ### 3. Wire up the middleware
 
 **Ordering matters.** The audit middleware must run **after** any
-middleware that provisions the request with session data — the producer
+middleware that provisions the request with session data - the producer
 (`sessionMw` above) has to run before the consumer (the audit middleware,
 which calls your `resolveActor`):
 
@@ -183,7 +189,7 @@ app.use(sessionMw);
 app.use(expressMiddleware({ recorder: rec, resolveActor }));
 app.use(routes);
 
-// ❌ Audit runs before session — resolveActor sees no session, every
+// ❌ Audit runs before session - resolveActor sees no session, every
 //    event is provisioned with an anonymous Actor.
 app.use(expressMiddleware({ recorder: rec, resolveActor }));
 app.use(sessionMw);
@@ -192,7 +198,7 @@ app.use(routes);
 
 ### 4. Record events in handlers
 
-The middleware installs `req.event` — a mutable Event for the current
+The middleware installs `req.event` - a mutable Event for the current
 request, pre-populated with Actor (from your resolver) and Origin (from
 request headers). Enrich it during the handler; the middleware
 auto-records on response finish if `action` is set.
@@ -250,7 +256,7 @@ in the document are silently skipped.
 
 #### Recording multiple events per request
 
-Some handlers fan out — one privileged operation can affect many
+Some handlers fan out - one privileged operation can affect many
 resources, and each one is independently audit-worthy. A common
 incident-response example is revoking every active session for a
 compromised account: investigators need to see *which* sessions were
@@ -281,7 +287,7 @@ app.post("/users/:id/sessions/revoke-all", async (req, res) => {
 ```
 
 The buffered recorder coalesces these (and events from other concurrent
-requests) into a single batch call to the ingestion API on each flush —
+requests) into a single batch call to the ingestion API on each flush -
 no need to assemble batches yourself.
 
 ---
@@ -296,7 +302,7 @@ setting an action produce no event:
 app.post("/users/:id/lock", async (req, res) => {
   const user = await loadUser(req.params.id);
   if (!user) return res.status(404).send("not found");
-  // no action set — we don't care about audit logs for attempts to lock
+  // no action set - we don't care about audit logs for attempts to lock
   // a user that doesn't exist
   if (user.locked) return res.status(200).send();
   // ditto for already-locked
@@ -308,7 +314,7 @@ app.post("/users/:id/lock", async (req, res) => {
 });
 ```
 
-**Overriding the resolver's `actor`** — when there's no session yet
+**Overriding the resolver's `actor`** - when there's no session yet
 (login, signup) or when the actor isn't a session user (webhooks, system
 tasks), the handler overrides `req.event.actor` directly. Login is the
 canonical case: failed and successful attempts are both
@@ -344,12 +350,12 @@ app.post("/login", async (req, res) => {
 });
 ```
 
-**Explicit `result` wins over auto-capture** — when the HTTP status
+**Explicit `result` wins over auto-capture** - when the HTTP status
 doesn't reflect the operation's audit outcome. Password reset is the
 canonical case: anti-enumeration security requires the API to redirect
 to the same "check your email" page whether the email matched a real
 account or not, so the user-facing response is identical. Audit
-monitoring still needs to know which actually happened — repeated
+monitoring still needs to know which actually happened - repeated
 "no match" entries are how you spot credential-stuffing campaigns:
 
 ```ts
@@ -401,26 +407,26 @@ interface Event {
 The TS API uses **camelCase** field names; the wire format is
 **snake_case** (`tenant_id`, `occurred_at`, `display_name`,
 `idempotency_key`, etc.). The conversion happens at the recorder
-boundary — JSON sent to the ingestion API is byte-compatible with the
-Go SDK.
+boundary: the JSON sent to the ingestion API is snake_case with empty
+fields omitted.
 
 `projectId` is bound once at `create` and sent on every request as part
 of the URL path.
 
-`tenantId` groups events one level above the actor — set it when you
+`tenantId` groups events one level above the actor - set it when you
 run a multi-tenant SaaS and want events queryable per workspace, org,
 or connected account (multi-tenant CRMs, Stripe Connect-style
 platforms, B2B tools). Single-tenant apps (B2C products, internal
 dashboards) leave it blank.
 
-`result.message` is `unknown` and special-cases `Error` — pass an
+`result.message` is `unknown` and special-cases `Error` - pass an
 `Error` directly and it serializes as the result of `err.message`:
 
 ```ts
 e.result = { status: "error", message: err };
 ```
 
-Two helpers attach metadata in slog style:
+Two helpers attach metadata as key/value pairs:
 
 ```ts
 e.withField("reason", "policy_violation");
@@ -442,8 +448,8 @@ await rec.record(e);
 
 ## BufferedRecorder
 
-`recorder.create` (and `Client.newRecorder`) returns a `BufferedRecorder`
-— events enqueue on an in-memory buffer and a flush is triggered when
+`recorder.create` (and `Client.newRecorder`) returns a `BufferedRecorder`:
+events enqueue on an in-memory buffer and a flush is triggered when
 the size threshold or interval is reached. Tuning knobs live in the
 [Quickstart options table](#1-bind-credentials-and-construct-subclients);
 the subsections below cover runtime concerns.
@@ -458,14 +464,14 @@ When the buffer is full at `record()` time:
 | `"block"`        | Wait for space (resolves on free, abort signal, or close).                        |
 | `"error"`        | Reject with `BufferFullError`.                                                    |
 
-A full buffer means you're misconfigured — resize, speed up downstream,
+A full buffer means you're misconfigured - resize, speed up downstream,
 or scale out. Watch `stats().dropped`.
 
 ### `flush()` and `stats()`
 
 `flush(signal?)` synchronously drains everything buffered at the time of
 the call. Useful for tests and graceful shutdown sync points. `close()`
-calls a final drain — you don't need to `flush()` before `close()`.
+calls a final drain - you don't need to `flush()` before `close()`.
 
 `stats()` exposes counters for export to Prometheus/Datadog:
 
@@ -483,18 +489,18 @@ interface BufferedStats {
 
 The recorder package exports three error classes:
 
-- `HttpError` — non-2xx response from the ingestion endpoint. Read
+- `HttpError` - non-2xx response from the ingestion endpoint. Read
   `statusCode` and `body`; check `transient` (5xx + 429) to distinguish
   retryable failures.
-- `BufferFullError` — overflow with `policy: "error"`.
-- `DrainTimeoutError` — `close()` exceeded `drainTimeout` with events
+- `BufferFullError` - overflow with `policy: "error"`.
+- `DrainTimeoutError` - `close()` exceeded `drainTimeout` with events
   still pending.
 
 ---
 
 ## Idempotency
 
-`event.idempotencyKey` is for caller-supplied stable keys — webhook
+`event.idempotencyKey` is for caller-supplied stable keys - webhook
 event IDs, upstream request IDs, anything that identifies "the same
 logical event" across retries the SDK can't see:
 
@@ -511,7 +517,7 @@ at send time when the key is empty:
 const rec = es.newRecorder({ autoIdempotencyKey: true });
 ```
 
-Off by default. Caller-supplied keys always win — auto-population only
+Off by default. Caller-supplied keys always win - auto-population only
 fills empty keys.
 
 ---
@@ -579,15 +585,15 @@ const token = await m.mintToken({ /* ... */ });
 
 - A plain `Error` from client-side validation (caller-supplied options
   fail the SDK's checks; no HTTP call is made).
-- `MinterError` for non-2xx responses from the mint endpoint —
-  `statusCode` matches the spec: 400 for invalid options, 401 for bad
-  auth, 404 for missing/soft-deleted project.
+- `MinterError` for non-2xx responses from the mint endpoint -
+  `statusCode` is 400 for invalid options, 401 for bad auth, 404 for
+  missing/soft-deleted project.
 - A transport error (timeout, connection refused, network failure).
 
 ### Configuration
 
 `new minter.Client` accepts options analogous to the recorder:
 
-- `baseUrl` — override the API host (tests, staging).
-- `fetch` — supply a custom `fetch` implementation.
-- `requestTimeout` — per-request timeout in milliseconds.
+- `baseUrl` - override the API host (tests, staging).
+- `fetch` - supply a custom `fetch` implementation.
+- `requestTimeout` - per-request timeout in milliseconds.

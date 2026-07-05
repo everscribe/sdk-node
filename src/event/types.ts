@@ -22,7 +22,7 @@ export interface Origin {
 
 /** Outcome of the audited action.
  *
- * `status`:  "ok" | "error" | "denied" — empty/undefined means unrecorded.
+ * `status`:  "ok" | "error" | "denied" - empty/undefined means unrecorded.
  * `code`:    HTTP status or app-defined code.
  * `message`: free-form. `Error` instances render as `err.message`; empty
  *            strings are omitted at the wire boundary. */

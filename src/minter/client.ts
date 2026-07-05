@@ -35,7 +35,7 @@ export class MinterError extends Error {
 }
 
 /** Mints embed tokens for a single project. Construct one and reuse for
- *  the lifetime of the process — Client is safe for concurrent use. */
+ *  the lifetime of the process - Client is safe for concurrent use. */
 export class Client {
   readonly baseUrl: string;
   readonly projectId: string;

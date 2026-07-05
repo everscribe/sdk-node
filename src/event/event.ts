@@ -43,7 +43,7 @@ export class Event {
     return this;
   }
 
-  /** Sets metadata from alternating key/value pairs, slog-style:
+  /** Sets metadata from alternating key/value pairs:
    *
    *      e.withFields("reason", "spam", "severity", "high")
    *
@@ -61,7 +61,7 @@ export class Event {
   }
 
   /** Records a state transition for a mutation event. `before` and `after`
-   *  are JSON-normalized (matching Go's marshal+unmarshal round-trip) and
+   *  are JSON-normalized (via a marshal+unmarshal round-trip) and
    *  any `withRedactedFields` paths are scrubbed before storage. The
    *  audit-log API computes the patch on ingest.
    *
@@ -95,7 +95,7 @@ export class Event {
 
 /** Returns a fresh Event pre-populated from the request-scoped template
  *  installed by `runWithEvent` (typically called from a middleware adapter).
- *  Each call returns an independent Event — mutations don't leak across
+ *  Each call returns an independent Event - mutations don't leak across
  *  events derived from the same context.
  *
  *  When called outside a `runWithEvent` scope (e.g. from background jobs),
@@ -139,7 +139,7 @@ function cloneTemplate(tmpl: Event): Event {
   if (tmpl.target) clone.target = { ...tmpl.target };
   if (tmpl.origin) clone.origin = { ...tmpl.origin };
   if (tmpl.result) clone.result = { ...tmpl.result };
-  // metadata explicitly NOT cloned — each event owns its own map.
+  // metadata explicitly NOT cloned - each event owns its own map.
   if (tmpl.change) clone.change = { ...tmpl.change };
   if (tmpl.idempotencyKey) clone.idempotencyKey = tmpl.idempotencyKey;
   return clone;

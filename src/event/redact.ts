@@ -19,10 +19,9 @@ export function withRedactedFields(...paths: string[]): DiffOption {
 }
 
 /** Round-trips `value` through JSON to normalize types (Date → ISO string,
- *  etc.), then redacts the listed JSON Pointer paths in place. Mirrors Go's
- *  `marshalRedacted`: the result is a wire-shape value that the wire
- *  serializer can JSON.stringify directly. Returns `undefined` if `value`
- *  fails JSON.stringify. */
+ *  etc.), then redacts the listed JSON Pointer paths in place. The result
+ *  is a wire-shape value that the wire serializer can JSON.stringify
+ *  directly. Returns `undefined` if `value` fails JSON.stringify. */
 export function applyRedaction(value: unknown, paths: readonly string[]): unknown {
   let doc: unknown;
   try {

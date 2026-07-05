@@ -1,7 +1,6 @@
 import type { Logger } from "../event/types.js";
 
-/** Default console-backed logger. Mirrors the role of `slog.Default()` in
- *  the Go SDK. */
+/** Default console-backed logger, used when no logger is supplied. */
 export const consoleLogger: Logger = {
   warn(message, meta) {
     if (meta && Object.keys(meta).length > 0) {

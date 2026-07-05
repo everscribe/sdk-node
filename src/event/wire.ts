@@ -1,10 +1,10 @@
 import type { Actor, Change, Origin, Result, Target } from "./types.js";
 import type { Event } from "./event.js";
 
-/** Serializes an Event to its wire shape: camelCase TS fields → snake_case
- *  JSON keys, with `omitempty`/`omitzero` semantics matching the Go SDK so
- *  the wire format is byte-compatible. Internal — used by the recorder
- *  package; exported across packages within this SDK. */
+/** Serializes an Event to its wire shape: camelCase TS fields become
+ *  snake_case JSON keys, with empty fields omitted from the output.
+ *  Internal, used by the recorder package; exported across packages within
+ *  this SDK. */
 export function eventToWire(e: Event): Record<string, unknown> {
   const wire: Record<string, unknown> = {
     id: e.id,
@@ -31,7 +31,7 @@ export function eventToWire(e: Event): Record<string, unknown> {
 }
 
 function actorToWire(a: Actor): Record<string, unknown> {
-  // `type` is always present (Go: no omitempty); other fields use omitempty.
+  // `type` is always present; other fields are omitted when empty.
   const w: Record<string, unknown> = { type: a.type };
   if (a.id) w.id = a.id;
   if (a.displayName) w.display_name = a.displayName;
@@ -54,8 +54,9 @@ function originToWire(o: Origin): Record<string, unknown> | undefined {
   return Object.keys(w).length > 0 ? w : undefined;
 }
 
-/** Mirrors Go's `Result.MarshalJSON`: Error → `.message`, empty string
- *  message omitted, all-empty Result returns undefined (omitted by caller). */
+/** Serializes a Result: an Error becomes `.message`, an empty-string
+ *  message is omitted, and an all-empty Result returns undefined (omitted
+ *  by caller). */
 export function resultToWire(r: Result): Record<string, unknown> | undefined {
   const w: Record<string, unknown> = {};
   if (r.status) w.status = r.status;

@@ -18,7 +18,7 @@ describe("resultToWire", () => {
     ).toEqual({ status: "error", code: 500, message: "db down" });
   });
 
-  it("preserves an Error chain string (matches Go's wrapped err.Error())", () => {
+  it("preserves an Error chain string", () => {
     const wrapped = new Error("recorder: wrapped: original");
     expect(resultToWire({ status: "error", message: wrapped })).toEqual({
       status: "error",
@@ -92,7 +92,7 @@ describe("eventToWire", () => {
     });
   });
 
-  it("always includes actor.type even when empty (matches Go: no omitempty)", () => {
+  it("always includes actor.type even when empty", () => {
     const e = new Event("x");
     const wire = eventToWire(e) as { actor: { type: string } };
     expect(wire.actor).toEqual({ type: "" });

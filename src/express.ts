@@ -21,7 +21,7 @@ export type ActorResolver = (req: Request) => Actor;
 export interface ExpressMiddlewareOptions {
   /** Recorder to send the per-request event to on response finish/close.
    *  When omitted, `req.event` is still installed but auto-record does
-   *  not fire — handlers must call `recorder.record` themselves. */
+   *  not fire - handlers must call `recorder.record` themselves. */
   recorder?: Recorder;
   /** Derives the Actor for the request. Typically reads session data
    *  from `req.user`, `req.session`, or similar. Defaults to a resolver
@@ -46,14 +46,14 @@ const ANONYMOUS: Actor = { type: "anonymous" };
  *  4. Exposes a per-request mutable Event on `req.event` for handlers
  *     to enrich (set Action, Target, Metadata, optionally Result).
  *  5. If a recorder is configured, records `req.event` once on the
- *     first of `res.on("finish")` or `res.on("close")` — provided the
+ *     first of `res.on("finish")` or `res.on("close")` - provided the
  *     handler set `req.event.action`. Empty Action is a no-op.
  *
  *  Auto-record errors are logged via the configured `logger` and never
  *  thrown; an audit failure must not break the user-facing response.
  *
  *  This middleware must run AFTER any session/auth middleware that
- *  attaches identity to the request — `resolveActor` typically reads
+ *  attaches identity to the request - `resolveActor` typically reads
  *  session state. Typical chain: parsers → session → auth → audit → routes. */
 export function expressMiddleware(opts: ExpressMiddlewareOptions = {}): RequestHandler {
   const resolve = opts.resolveActor ?? (() => ANONYMOUS);

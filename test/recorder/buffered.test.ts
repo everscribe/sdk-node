@@ -51,7 +51,7 @@ class BlockingRec implements Recorder {
 }
 
 /** Builds a BufferedRecorder with no auto-interval flush so tests are
- *  deterministic. Mirrors `newTestBuffered` from the Go test suite. */
+ *  deterministic. */
 function buildBuffered(
   inner: Recorder,
   opts: ConstructorParameters<typeof BufferedRecorder>[1] = {},

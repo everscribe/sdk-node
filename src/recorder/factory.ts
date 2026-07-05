@@ -4,7 +4,7 @@ import type { RecorderOptions } from "./types.js";
 
 /** Recommended entry point. Returns a `BufferedRecorder` wrapping an
  *  `HttpRecorder` configured with the given credentials. Both HTTP and
- *  buffered options live on a single options object — the factory routes
+ *  buffered options live on a single options object - the factory routes
  *  each to the appropriate inner constructor.
  *
  *      const rec = recorder.create(projectId, apiKey, {

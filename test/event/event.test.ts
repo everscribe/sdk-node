@@ -84,7 +84,7 @@ describe("withField", () => {
 });
 
 describe("withFields", () => {
-  it("handles slog-style pairs", () => {
+  it("handles alternating key/value pairs", () => {
     const e = new Event().withFields("reason", "spam", "severity", "high", "count", 3);
     expect(e.metadata).toEqual({ reason: "spam", severity: "high", count: 3 });
   });

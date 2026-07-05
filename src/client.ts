@@ -8,7 +8,7 @@ const ENV_API_KEY = "EVERSCRIBE_API_KEY";
 
 /** Credential-bearing handle to an Everscribe project. Holds the project ID
  *  and API key so per-surface clients (recorder, minter) don't have to be
- *  re-passed them. Reuse a single Client for the lifetime of the process —
+ *  re-passed them. Reuse a single Client for the lifetime of the process -
  *  it's safe for concurrent use. */
 export class Client {
   readonly projectId: string;

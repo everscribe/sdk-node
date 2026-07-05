@@ -64,10 +64,10 @@ export class BufferedRecorder implements Recorder {
 
   /** Serialization chain: every flush awaits the previous one's settlement
    *  so flushes never overlap. The chain swallows errors to keep the chain
-   *  alive — individual flush errors are surfaced via `currentFlush`. */
+   *  alive - individual flush errors are surfaced via `currentFlush`. */
   private flushChain: Promise<void> = Promise.resolve();
   /** Promise of the currently scheduled (or in-flight) flush, or null when
-   *  no flush is pending. Resolves with the flush's outcome — errors from
+   *  no flush is pending. Resolves with the flush's outcome - errors from
    *  the inner recorder propagate here. */
   private currentFlush: Promise<void> | null = null;
 
@@ -225,7 +225,7 @@ export class BufferedRecorder implements Recorder {
             await this.inner.record(e, { signal: ctrl.signal });
           } catch (err) {
             if (firstErr === undefined) firstErr = err;
-            // Continue — one failure should not abort the batch.
+            // Continue - one failure should not abort the batch.
           }
         }
       }

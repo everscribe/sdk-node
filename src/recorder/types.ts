@@ -51,7 +51,7 @@ export interface HttpRecorderOptions {
   /** Per-request timeout in milliseconds. Default 10_000. */
   requestTimeout?: number;
   /** Copy `event.id` into `event.idempotencyKey` at send time when the
-   *  latter is empty. Caller-supplied keys win — auto-population only fills
+   *  latter is empty. Caller-supplied keys win - auto-population only fills
    *  empty keys. Off by default. */
   autoIdempotencyKey?: boolean;
 }
