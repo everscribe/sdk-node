@@ -1,4 +1,6 @@
-<p align="center">
+<div align="center">
+
+<p>
   <img src="assets/everscribe.svg" alt="Everscribe" height="64" align="middle">
   &nbsp;&nbsp;<b>+</b>&nbsp;&nbsp;
   <picture>
@@ -7,7 +9,7 @@
   </picture>
 </p>
 
-<p align="center">
+<p>
   <a href="https://www.npmjs.com/package/@everscribe/sdk-node"><img src="https://img.shields.io/npm/v/@everscribe/sdk-node.svg" alt="npm"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
 </p>
@@ -18,8 +20,12 @@ Node.js SDK for the [Everscribe](https://everscribe.io) API. It exposes a
 **recorder** for writing append-only audit events and a **minter** for issuing
 short-lived browser tokens for [embeddable components](https://github.com/everscribe/components).
 
-## Documentation
+## 📖 Documentation
 
-- [Setup with AI](https://everscribe.io/docs/quickstart/overview#pick-a-setup-path): hosted agent or BYOK Claude Code skill
-- [DIY](https://everscribe.io/docs/sdks/node-install): install and wire the SDK up yourself
-- [Full-stack runnable examples](https://github.com/everscribe/examples): end-to-end sample apps
+[Setup with AI](https://everscribe.io/docs/quickstart/overview#pick-a-setup-path): hosted agent or BYOK Claude Code skill
+
+[DIY](https://everscribe.io/docs/sdks/node-install): install and wire the SDK up yourself
+
+[Full-stack runnable examples](https://github.com/everscribe/examples): end-to-end sample apps
+
+</div>
