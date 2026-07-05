@@ -1,7 +1,10 @@
 <p align="center">
   <img src="assets/everscribe.svg" alt="Everscribe" height="64" align="middle">
   &nbsp;&nbsp;<b>+</b>&nbsp;&nbsp;
-  <img src="assets/nodejs.svg" alt="Node.js" height="56" align="middle">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/nodejs-dark.svg">
+    <img src="assets/nodejs.svg" alt="Node.js" height="56" align="middle">
+  </picture>
 </p>
 
 <p align="center">
