@@ -1,8 +1,8 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 
-import { Event, fromContext, prepareEvent, runWithEvent } from "./event/event.js";
+import { Event, begin, resultFromHttpStatus } from "./event/event.js";
 import { originFromRequest, type RequestLike } from "./event/origin.js";
-import type { Actor, Logger, StatusCapture } from "./event/types.js";
+import type { Actor, Logger, OutcomeCapture } from "./event/types.js";
 import { consoleLogger } from "./recorder/logger.js";
 import type { Recorder } from "./recorder/types.js";
 
@@ -37,17 +37,22 @@ const ANONYMOUS: Actor = { type: "anonymous" };
  *
  *  1. Builds an Event template (Actor from `resolveActor`, Origin from
  *     request headers).
- *  2. Installs an AsyncLocalStorage scope so `fromContext()` returns
- *     fresh clones of the template for handlers that record multiple
- *     events per request.
- *  3. Installs a StatusCapture so `prepareEvent` can auto-populate the
- *     event's Result from the final HTTP status when the handler hasn't
- *     set one explicitly.
- *  4. Exposes a per-request mutable Event on `req.event` for handlers
- *     to enrich (set Action, Target, Metadata, optionally Result).
- *  5. If a recorder is configured, records `req.event` once on the
- *     first of `res.on("finish")` or `res.on("close")` - provided the
- *     handler set `req.event.action`. Empty Action is a no-op.
+ *  2. Calls the core `begin` lifecycle, which installs an AsyncLocalStorage
+ *     scope so `current()` and `newFromContext()` work for the duration of
+ *     the request, and stamps an idempotency key on the request-scoped
+ *     event.
+ *  3. Installs an OutcomeCapture, backed by `resultFromHttpStatus`, so
+ *     `prepareEvent` can auto-populate the event's Result from the final
+ *     HTTP status when the handler hasn't set one explicitly.
+ *  4. Exposes the request-scoped mutable Event on `req.event` for handlers
+ *     to enrich (set Action, Target, Metadata, optionally Result). This is
+ *     the same object `current()` returns - `req.event` is an Express
+ *     convenience, not a separate source of truth.
+ *  5. If a recorder is configured, records `req.event` once on the first
+ *     of `res.on("finish")` or `res.on("close")` - provided the handler
+ *     set `req.event.action`. Empty Action is a no-op. The core lifecycle
+ *     dedupes this against a handler that already recorded the same event
+ *     manually, so both paths never submit twice.
  *
  *  Auto-record errors are logged via the configured `logger` and never
  *  thrown; an audit failure must not break the user-facing response.
@@ -68,41 +73,22 @@ export function expressMiddleware(opts: ExpressMiddlewareOptions = {}): RequestH
       template.origin = origin;
     }
 
-    const capture: StatusCapture = {
-      get status() {
-        return res.headersSent || res.writableEnded ? res.statusCode : 0;
+    const capture: OutcomeCapture = {
+      get outcome() {
+        if (!res.headersSent && !res.writableEnded) return undefined;
+        return resultFromHttpStatus(res.statusCode);
       },
     };
 
-    runWithEvent(template, capture, () => {
-      const userEvent = fromContext();
-      req.event = userEvent;
+    const lifecycle = begin(template, capture, rec, logger);
+    req.event = lifecycle.event;
 
+    lifecycle.run(() => {
       if (rec) {
-        let recorded = false;
-        // Two reasons to re-enter the ALS scope here:
-        //   (a) Node's EventEmitter does not propagate AsyncLocalStorage
-        //       from listener-registration time to emit time.
-        //   (b) Custom recorders may not call prepareEvent themselves,
-        //       so the middleware applies it explicitly to honor the
-        //       documented auto-Result-from-status behavior.
-        const onEnd = () => {
-          if (recorded) return;
-          recorded = true;
-          if (!userEvent.action) return;
-          runWithEvent(template, capture, () => {
-            prepareEvent(userEvent);
-            rec.record(userEvent).catch((err) => {
-              logger.error("everscribe: auto-record failed", {
-                error: err instanceof Error ? err.message : String(err),
-              });
-            });
-          });
-        };
+        const onEnd = () => lifecycle.end();
         res.once("finish", onEnd);
         res.once("close", onEnd);
       }
-
       next();
     });
   };

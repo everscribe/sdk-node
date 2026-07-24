@@ -42,12 +42,20 @@ export interface Change {
   patch?: unknown;
 }
 
-/** Captures the response status for an in-flight request, so `prepareEvent`
- *  can auto-populate `Result` when the handler hasn't set one. Implemented
- *  by framework adapters (Express, etc.). */
-export interface StatusCapture {
-  /** Captured HTTP status code, or 0 if no response has been written. */
-  readonly status: number;
+/** Reports the adapter-derived outcome for an in-flight call, so
+ *  `prepareEvent` (and the core auto-record lifecycle) can auto-populate
+ *  `Result` when the handler hasn't set one. Implemented by framework
+ *  adapters (Express, Fastify, gRPC, etc.).
+ *
+ *  `outcome` is `undefined` when the call has not produced a result yet -
+ *  this replaces an earlier design where a numeric HTTP status of 0 meant
+ *  "nothing written." That sentinel does not generalize: gRPC's OK status
+ *  is code 0, so a transport-neutral capture cannot signal "no outcome"
+ *  with an integer. Adapters over an HTTP-shaped status build their
+ *  `Result` via `resultFromHttpStatus`, which still special-cases 0 as
+ *  "no response written." */
+export interface OutcomeCapture {
+  readonly outcome: Result | undefined;
 }
 
 /** Minimal logger interface used by buffered/HTTP recorders for diagnostics
