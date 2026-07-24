@@ -7,6 +7,8 @@ export default defineConfig({
     "recorder/index": "src/recorder/index.ts",
     "minter/index": "src/minter/index.ts",
     express: "src/express.ts",
+    fastify: "src/fastify.ts",
+    hono: "src/hono.ts",
   },
   format: ["esm", "cjs"],
   dts: true,

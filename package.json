@@ -35,6 +35,16 @@
       "types": "./dist/express.d.ts",
       "import": "./dist/express.js",
       "require": "./dist/express.cjs"
+    },
+    "./fastify": {
+      "types": "./dist/fastify.d.ts",
+      "import": "./dist/fastify.js",
+      "require": "./dist/fastify.cjs"
+    },
+    "./hono": {
+      "types": "./dist/hono.d.ts",
+      "import": "./dist/hono.js",
+      "require": "./dist/hono.cjs"
     }
   },
   "files": [
@@ -55,15 +65,25 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.0",
     "express": "^5.0.0",
+    "fastify": "^5.10.0",
+    "hono": "^4.12.31",
     "tsup": "^8.3.5",
     "typescript": "^5.7.0",
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
-    "express": ">=4 <6"
+    "express": ">=4 <6",
+    "fastify": ">=4 <6",
+    "hono": ">=4 <5"
   },
   "peerDependenciesMeta": {
     "express": {
+      "optional": true
+    },
+    "fastify": {
+      "optional": true
+    },
+    "hono": {
       "optional": true
     }
   }
