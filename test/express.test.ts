@@ -2,7 +2,7 @@ import express from "express";
 import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Event, fromContext } from "../src/event/event.js";
+import { Event, newFromContext, prepareEvent } from "../src/event/event.js";
 import { expressMiddleware } from "../src/express.js";
 import type { Recorder } from "../src/recorder/types.js";
 
@@ -151,7 +151,7 @@ describe("expressMiddleware: actor and origin", () => {
   });
 });
 
-describe("expressMiddleware: req.event and fromContext", () => {
+describe("expressMiddleware: req.event and newFromContext", () => {
   it("installs a fresh Event on req.event for each request", async () => {
     const seen: string[] = [];
     h = await startApp((app, { recorder }) => {
@@ -170,7 +170,7 @@ describe("expressMiddleware: req.event and fromContext", () => {
     expect(seen[0]).not.toBe(seen[1]);
   });
 
-  it("fromContext() returns clones distinct from req.event", async () => {
+  it("newFromContext() returns clones distinct from req.event", async () => {
     let primaryId = "";
     let cloneId = "";
     h = await startApp((app, { recorder }) => {
@@ -182,7 +182,7 @@ describe("expressMiddleware: req.event and fromContext", () => {
       );
       app.post("/", (req, res) => {
         primaryId = req.event!.id;
-        const sub = fromContext();
+        const sub = newFromContext();
         cloneId = sub.id;
         // Clone should inherit actor from template.
         expect(sub.actor).toEqual({ type: "user", id: "u1" });
@@ -276,6 +276,71 @@ describe("expressMiddleware: auto-record", () => {
     await new Promise((r) => setTimeout(r, 30));
     // Manual record fired once; no double record from the middleware.
     expect(calls).toHaveLength(1);
+  });
+
+  // Invariant 3 regression: the middleware auto-records on finish/close, but
+  // a handler may also record the same event explicitly through the same
+  // recorder. Dedupe must be state (checked/set by both paths), not an
+  // inference from "action is empty" - this handler sets action AND records
+  // explicitly, so an inference-based dedupe would submit twice.
+  //
+  // The recorder here calls prepareEvent itself, exactly like the stock
+  // HttpRecorder and BufferedRecorder do (recorder/http.ts, recorder/
+  // buffered.ts) - that call is what lets the manual path claim the
+  // dedupe flag before the auto-record backstop runs.
+  it("does not double-record when a handler manually records req.event through the configured recorder (invariant 3)", async () => {
+    const records: Event[] = [];
+    const recorder: Recorder = {
+      async record(e) {
+        prepareEvent(e);
+        records.push(e);
+      },
+    };
+    h = await startApp((app) => {
+      app.use(expressMiddleware({ recorder }));
+      app.post("/", (req, res) => {
+        req.event!.action = "user.login";
+        void recorder.record(req.event!); // manual path, same recorder as the middleware
+        res.status(200).send();
+      });
+    });
+    await fetch(`${h.url}/`, { method: "POST" });
+    // Wait for the finish/close auto-record backstop to have a chance to
+    // (incorrectly) fire a second time.
+    await new Promise((r) => setTimeout(r, 30));
+    expect(records).toHaveLength(1);
+  });
+
+  // Invariant 4 regression, exercised through the real middleware: the
+  // request-scoped event must carry idempotencyKey = id, and a
+  // newFromContext() clone recorded from the same handler must stay
+  // keyless, matching the core-level unit tests in event.test.ts.
+  it("stamps idempotencyKey on req.event but not on newFromContext() clones", async () => {
+    const records: Event[] = [];
+    const recorder: Recorder = {
+      async record(e) {
+        prepareEvent(e);
+        records.push(e);
+      },
+    };
+    let cloneKey: string | undefined = "unset";
+    h = await startApp((app) => {
+      app.use(expressMiddleware({ recorder }));
+      app.post("/", (req, res) => {
+        req.event!.action = "user.login";
+        const clone = newFromContext();
+        clone.action = "user.login.clone";
+        cloneKey = clone.idempotencyKey;
+        void recorder.record(clone);
+        res.status(200).send();
+      });
+    });
+    await fetch(`${h.url}/`, { method: "POST" });
+    await new Promise((r) => setTimeout(r, 30));
+    expect(cloneKey).toBeFalsy();
+    const primary = records.find((e) => e.action === "user.login");
+    expect(primary?.idempotencyKey).toBeTruthy();
+    expect(primary?.idempotencyKey).toBe(primary?.id);
   });
 
   it("logs (does not throw) when auto-record fails", async () => {
