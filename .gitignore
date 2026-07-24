@@ -8,3 +8,7 @@ coverage
 !.env.example
 .vscode
 .idea
+
+# subagent scratch reports
+.*-report.md
+.grpc-spike.md
