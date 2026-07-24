@@ -45,6 +45,11 @@
       "types": "./dist/hono.d.ts",
       "import": "./dist/hono.js",
       "require": "./dist/hono.cjs"
+    },
+    "./grpc": {
+      "types": "./dist/grpc.d.ts",
+      "import": "./dist/grpc.js",
+      "require": "./dist/grpc.cjs"
     }
   },
   "files": [
@@ -62,6 +67,7 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "@grpc/grpc-js": "^1.14.4",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.0",
     "express": "^5.0.0",
@@ -72,11 +78,15 @@
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
+    "@grpc/grpc-js": ">=1.10 <2",
     "express": ">=4 <6",
     "fastify": ">=4 <6",
     "hono": ">=4 <5"
   },
   "peerDependenciesMeta": {
+    "@grpc/grpc-js": {
+      "optional": true
+    },
     "express": {
       "optional": true
     },

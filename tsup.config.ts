@@ -9,6 +9,7 @@ export default defineConfig({
     express: "src/express.ts",
     fastify: "src/fastify.ts",
     hono: "src/hono.ts",
+    grpc: "src/grpc.ts",
   },
   format: ["esm", "cjs"],
   dts: true,
