@@ -3,7 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { current, Event, newFromContext, prepareEvent } from "../src/event/event.js";
-import { fastifyPlugin } from "../src/fastify.js";
+import { fastifyMiddleware } from "../src/fastify.js";
 import type { Recorder } from "../src/recorder/types.js";
 
 interface Harness {
@@ -62,11 +62,11 @@ afterEach(async () => {
   }
 });
 
-describe("fastifyPlugin: actor and origin", () => {
+describe("fastifyMiddleware: actor and origin", () => {
   it("populates actor from resolveActor", async () => {
     h = await startApp((app, { recorder }) => {
       void app.register(
-        fastifyPlugin({
+        fastifyMiddleware({
           recorder,
           resolveActor: () => ({ type: "user", id: "u1", displayName: "alice" }),
         }),
@@ -83,7 +83,7 @@ describe("fastifyPlugin: actor and origin", () => {
 
   it("defaults to anonymous when no resolver provided", async () => {
     h = await startApp((app, { recorder }) => {
-      void app.register(fastifyPlugin({ recorder }));
+      void app.register(fastifyMiddleware({ recorder }));
       app.post("/", (request, reply) => {
         request.event!.action = "test";
         void reply.status(200).send();
@@ -96,7 +96,7 @@ describe("fastifyPlugin: actor and origin", () => {
 
   it("derives origin from request headers", async () => {
     h = await startApp((app, { recorder }) => {
-      void app.register(fastifyPlugin({ recorder }));
+      void app.register(fastifyMiddleware({ recorder }));
       app.post("/", (request, reply) => {
         request.event!.action = "test";
         void reply.status(200).send();
@@ -117,11 +117,11 @@ describe("fastifyPlugin: actor and origin", () => {
   });
 });
 
-describe("fastifyPlugin: request.event, current(), and newFromContext", () => {
+describe("fastifyMiddleware: request.event, current(), and newFromContext", () => {
   it("installs a fresh Event on request.event for each request", async () => {
     const seen: string[] = [];
     h = await startApp((app, { recorder }) => {
-      void app.register(fastifyPlugin({ recorder }));
+      void app.register(fastifyMiddleware({ recorder }));
       app.post("/", (request, reply) => {
         seen.push(request.event!.id);
         request.event!.action = "test";
@@ -139,7 +139,7 @@ describe("fastifyPlugin: request.event, current(), and newFromContext", () => {
   it("current() resolves the same event as request.event inside a handler", async () => {
     let sawSameId = false;
     h = await startApp((app, { recorder }) => {
-      void app.register(fastifyPlugin({ recorder }));
+      void app.register(fastifyMiddleware({ recorder }));
       app.post("/", (request, reply) => {
         sawSameId = current().id === request.event!.id;
         request.event!.action = "test";
@@ -156,7 +156,7 @@ describe("fastifyPlugin: request.event, current(), and newFromContext", () => {
     let cloneId = "";
     h = await startApp((app, { recorder }) => {
       void app.register(
-        fastifyPlugin({
+        fastifyMiddleware({
           recorder,
           resolveActor: () => ({ type: "user", id: "u1" }),
         }),
@@ -176,10 +176,10 @@ describe("fastifyPlugin: request.event, current(), and newFromContext", () => {
   });
 });
 
-describe("fastifyPlugin: auto-record", () => {
+describe("fastifyMiddleware: auto-record", () => {
   it("records once on response completion", async () => {
     h = await startApp((app, { recorder }) => {
-      void app.register(fastifyPlugin({ recorder }));
+      void app.register(fastifyMiddleware({ recorder }));
       app.post("/", (request, reply) => {
         request.event!.action = "user.login";
         void reply.status(200).send();
@@ -194,7 +194,7 @@ describe("fastifyPlugin: auto-record", () => {
 
   it("auto-fills result from response status when handler doesn't set one", async () => {
     h = await startApp((app, { recorder }) => {
-      void app.register(fastifyPlugin({ recorder }));
+      void app.register(fastifyMiddleware({ recorder }));
       app.post("/forbidden", (request, reply) => {
         request.event!.action = "user.lock";
         void reply.status(403).send();
@@ -208,7 +208,7 @@ describe("fastifyPlugin: auto-record", () => {
 
   it("skips auto-record when action is empty", async () => {
     h = await startApp((app, { recorder }) => {
-      void app.register(fastifyPlugin({ recorder }));
+      void app.register(fastifyMiddleware({ recorder }));
       app.post("/noop", (_request, reply) => {
         void reply.status(200).send();
       });
@@ -226,7 +226,7 @@ describe("fastifyPlugin: auto-record", () => {
       },
     };
     h = await startApp((app) => {
-      void app.register(fastifyPlugin({}));
+      void app.register(fastifyMiddleware({}));
       app.post("/", (request, reply) => {
         request.event!.action = "test";
         void observer.record(request.event!);
@@ -249,7 +249,7 @@ describe("fastifyPlugin: auto-record", () => {
   // surface here.
   it("records a fabricated 200 when the handler returns without writing (documented Fastify limitation)", async () => {
     h = await startApp((app, { recorder }) => {
-      void app.register(fastifyPlugin({ recorder }));
+      void app.register(fastifyMiddleware({ recorder }));
       app.post("/nowrite", async (request, _reply) => {
         request.event!.action = "test.nowrite";
         // Deliberately no reply.send()/status() call and no return value.
@@ -282,7 +282,7 @@ describe("fastifyPlugin: auto-record", () => {
       },
     };
     h = await startApp((app) => {
-      void app.register(fastifyPlugin({ recorder }));
+      void app.register(fastifyMiddleware({ recorder }));
       app.post("/", (request, reply) => {
         const sub = newFromContext();
         sub.action = "mid.handler.event";
@@ -307,7 +307,7 @@ describe("fastifyPlugin: auto-record", () => {
         },
       };
       h = await startApp((app) => {
-        void app.register(fastifyPlugin({ recorder: failingRec }));
+        void app.register(fastifyMiddleware({ recorder: failingRec }));
         app.post("/", (request, reply) => {
           request.event!.action = "test";
           void reply.status(200).send();

@@ -8,7 +8,7 @@ import type { Recorder } from "./recorder/types.js";
 
 declare module "fastify" {
   interface FastifyRequest {
-    /** Mutable event installed by `fastifyPlugin`. Auto-recorded on
+    /** Mutable event installed by `fastifyMiddleware`. Auto-recorded on
      *  `onResponse` when a recorder was configured. */
     event?: Event;
   }
@@ -103,7 +103,7 @@ const lifecycles = new WeakMap<FastifyRequest, RequestLifecycle>();
  *  marker (native since Fastify v3) to skip that encapsulation, so the
  *  hooks apply app-wide - the same reach `app.use(expressMiddleware())` has
  *  for Express. No `fastify-plugin` dependency required. */
-export function fastifyPlugin(opts: FastifyMiddlewareOptions = {}): FastifyPluginAsync {
+export function fastifyMiddleware(opts: FastifyMiddlewareOptions = {}): FastifyPluginAsync {
   const resolve = opts.resolveActor ?? (() => ANONYMOUS);
   const rec = opts.recorder;
   const logger = opts.logger ?? consoleLogger;
