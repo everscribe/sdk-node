@@ -10,7 +10,7 @@
 </p>
 
 <p>
-  <a href="https://www.npmjs.com/package/@everscribe/sdk-node"><img src="https://img.shields.io/npm/v/@everscribe/sdk-node.svg" alt="npm"></a>
+  <a href="https://www.npmjs.com/package/@everscribe/sdk-node"><img src="https://img.shields.io/npm/v/@everscribe/sdk-node" alt="npm"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
 </p>
 
