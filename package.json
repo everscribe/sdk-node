@@ -1,8 +1,16 @@
 {
   "name": "@everscribe/sdk-node",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Node/TypeScript SDK for the Everscribe audit-log API",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/everscribe/sdk-node.git"
+  },
+  "homepage": "https://github.com/everscribe/sdk-node#readme",
+  "bugs": {
+    "url": "https://github.com/everscribe/sdk-node/issues"
+  },
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -57,8 +65,12 @@
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
+    "prepublishOnly": "npm run build",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
